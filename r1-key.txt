@@ -1,0 +1,34 @@
+XXXservice password-encryption,1/2
+hostname R1,1/2
+no ip domain lookup,1/2
+XXXenable secret 5,1/2
+interface Loopback1,0
+ip address 172.27.1.1 255.255.255.0,1/2
+
+interface GigabitEthernet0/0/1,0
+description Connection to S1,0
+ip address 172.27.0.1 255.255.255.0,1/2
+standby 1 ip 172.27.0.2,2
+standby 1 priority 150,2
+standby 1 preempt,2
+
+interface Serial0/0/0,0
+description Connection to R2,0
+bandwidth 128,2
+ip address 172.27.123.1 255.255.255.252,1/4
+ip ospf cost 7500,2
+clock rate 64000,1/4
+router ospf 1,1
+router-id 1.1.1.1,2
+
+passive-interface GigabitEthernet0/0/1,1
+passive-interface Loopback1,1
+auto-cost reference-bandwidth 1000,2
+
+network 172.27.0.0 0.0.0.255 area 0,2
+network 172.27.1.0 0.0.0.255 area 1,1
+network 172.27.123.0 0.0.0.3 area 0,2
+XXXbanner motd,1/2
+line con 0,1/2
+line vty 0 4,1/2
+
