@@ -1,0 +1,131 @@
+# R3 Key
+Building configuration...
+
+Current configuration : 2724 bytes
+!
+version 15.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+!
+hostname R3
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$/q0t$eBXdRTfja2dY1hue3boKy/
+!
+no aaa new-model
+memory-size iomem 10
+!
+ip domain name East.com
+ip cef
+ipv6 unicast-routing
+ipv6 cef
+!
+multilink bundle-name authenticated
+!
+cts logging verbose
+!
+username user password 7 02050D480809
+!
+redundancy
+!
+interface Tunnel0
+ ip address 172.16.1.2 255.255.255.252
+ tunnel source Serial0/0/1
+ tunnel destination 209.165.200.225
+!
+interface Embedded-Service-Engine0/0
+ no ip address
+ shutdown
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ pppoe enable group global
+ pppoe-client dial-pool-number 1
+!
+interface GigabitEthernet0/1
+ description Connection to 192.168.3.0/24 and 2001:DB8:ACAD:3::/64 LAN
+ ip address 192.168.3.1 255.255.255.0
+ ip nat inside
+ ip virtual-reassembly in
+ duplex auto
+ speed auto
+ ipv6 address FE80::3 link-local
+ ipv6 address 2001:DB8:ACAD:3::1/64
+ ipv6 eigrp 1
+ ipv6 traffic-filter LIMIT_ACCESS out
+!
+interface Serial0/0/0
+ no ip address
+ shutdown
+ ipv6 eigrp 1
+ clock rate 2000000
+!
+interface Serial0/0/1
+ description PPP connection to North AS
+ ip address 209.165.200.229 255.255.255.252
+ ip nat outside
+ ip virtual-reassembly in
+ ipv6 address FE80::3 link-local
+ ipv6 address 2001:DB8:ACAD:B::1/64
+ ipv6 eigrp 1
+!
+interface Dialer1
+ mtu 1492
+ ip address negotiated
+ encapsulation ppp
+ dialer pool 1
+ ppp authentication chap callin
+ ppp chap hostname Cust1
+ ppp chap password 7 0822455D0A161507020409
+!
+router bgp 65030
+ bgp log-neighbor-changes
+ network 192.168.3.0
+ neighbor 172.16.1.1 remote-as 65010
+!
+ip forward-protocol nd
+!
+no ip http server
+no ip http secure-server
+!
+ip nat inside source list 3 interface Serial0/0/1 overload
+ip route 0.0.0.0 0.0.0.0 Dialer1
+ip route 0.0.0.0 0.0.0.0 Serial0/0/1 200
+ip route 209.165.200.225 255.255.255.255 Serial0/0/1
+!
+ipv6 router eigrp 1
+ eigrp router-id 3.3.3.3
+!
+access-list 3 permit 192.168.3.0 0.0.0.255
+!
+ipv6 access-list LIMIT_ACCESS
+ deny icmp any any echo-request
+ permit ipv6 any any
+!
+control-plane
+!
+banner motd ^C Unauthorized Access is Prohibited! ^C
+!
+line con 0
+ password 7 121A0C041104
+ login
+line aux 0
+line 2
+ no activation-character
+ no exec
+ transport preferred none
+ transport output pad telnet rlogin lapb-ta mop udptn v120 ssh
+ stopbits 1
+line vty 0 4
+ login local
+ transport input ssh
+!
+scheduler allocate 20000 1000
+!
+end

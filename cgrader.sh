@@ -2,17 +2,43 @@
 # Jared Bernard
 # Grade Cisco config files
 
+read -p "Which device would you like graded (i.e. r1, r2, s1, etc)?: " device
+
+case $device in
+    r1) 
+        config="r1-confg"
+        key="r1-key.txt";;
+    r2)
+        config="r2-confg"
+        key="r2-key.txt";;
+    r3)
+        config="r3-confg"
+        key="r3-key.txt";;
+    s1)
+        config="s1-confg"
+        key="s1-key.txt";;
+    s2)
+        config="s2-confg"
+        key="s2-key.txt";;
+    s3)
+        config="s3-confg"
+        key="s3-key.txt";;
+    *)
+        echo "Please select either r1, r2, r3, s1, s2 or s3."
+esac
+
+
 clear
 # removes white space from beginning of line
-modr1file=$(sed 's/^[ \t]*//' "$1" > newr1confg) 
+modr1file=$(sed 's/^[ \t]*//' "$config" > newr1confg) 
 r1file="newr1confg"
 # Key file
-keyfile="$2"
+keyfile="$key"
 
 # separates items in file by new line instead of white space
 IFS=$'\n'	
 # Heading
-echo -e "Score\tKey$(tput cup 0 60)R1 Config"
+echo -e "Score\tKey$(tput cup 0 60)$device Config"
 echo "------------------------------------------------------------------------------------------------ "
 
 totpossible=0

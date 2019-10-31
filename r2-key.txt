@@ -1,0 +1,25 @@
+service password-encryption,1/4
+hostname R2,1/2
+enable secret 5,1/2 
+no ip domain lookup,1/2
+XXXusername R1 password 7,1 
+XXXusername Cust1 password 7,0
+
+interface Serial0/0/0,0
+description PPP connection to West AS,4/3
+ip address 209.165.200.226 255.255.255.252,4/3
+encapsulation ppp,4/3
+ppp authentication chap,1
+
+interface Serial0/0/1,0
+description PPP connection to East AS,7/4
+ip address 209.165.200.230 255.255.255.252,7/4
+clock rate 128000,0
+
+eigrp router-id 2.2.2.2,1
+
+XXXbanner motd ^C Unauthorized Access is Prohibited ^C,1/2
+
+line con 0,0
+XXXpassword 7,1/4
+login,0

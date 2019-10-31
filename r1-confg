@@ -1,13 +1,12 @@
+R1# show run
+Building configuration...
 
+Current configuration : 3052 bytes
 !
-! Last configuration change at 09:33:55 UTC Sat Jun 8 2019
-!
-version 16.7
+version 15.4
 service timestamps debug datetime msec
 service timestamps log datetime msec
 service password-encryption
-platform qfp utilization monitor load 80
-no platform punt-keepalive disable-kernel-core
 !
 hostname R1
 !
@@ -15,130 +14,124 @@ boot-start-marker
 boot-end-marker
 !
 !
-vrf definition Mgmt-intf
- !
- address-family ipv4
- exit-address-family
- !
- address-family ipv6
- exit-address-family
-!
-enable secret 5 $1$kpEq$BwMA2UdoRJPd4d6VRYNwD1
+enable secret 5 $1$vRRK$FieZhSzjNr8ORMhdL0u.G1
 !
 no aaa new-model
+memory-size iomem 15
 !
 no ip domain lookup
-!
-!
-!
-!
-!
-!
-!
-!
-!
-!
-subscriber templating
-!
-!
+ip domain name West.com
+ip cef
+ipv6 unicast-routing
+ipv6 cef
 multilink bundle-name authenticated
 !
+cts logging verbose
 !
-!
-!
-!
-!
-license udi pid ISR4321/K9 sn FDO22010HKF
-no license smart enable
-diagnostic bootup level minimal
-!
-spanning-tree extend system-id
-!
-!
-!
+username user password 7 121A0C041104
+username R2 password 7 14141B180F0B
+username web privilege 15 password 7 094F471A1A0A
 !
 redundancy
- mode none
-!
-!
-!
-!
-!
-!
 !
 !
 interface Loopback1
- ip address 172.27.1.1 255.255.255.0
+ip address 209.165.201.1 255.255.255.252
+ipv6 address FE80::1 link-local
+ipv6 address 2001:DB8:ACAD:2::1/64
+ipv6 eigrp 1
 !
-interface GigabitEthernet0/0/0
- no ip address
- negotiation auto
+interface Tunnel0
+ip address 172.16.1.1 255.255.255.0
+tunnel source Serial0/0/0
+tunnel destination 209.165.200.229
 !
-interface GigabitEthernet0/0/1
- description Connection to S1
- ip address 172.27.0.1 255.255.255.0
- standby version 2
- standby 1 ip 172.27.0.2
- standby 1 priority 0
- negotiation auto
+interface Embedded-Service-Engine0/0
+no ip address
+shutdown
+!
+interface GigabitEthernet0/0
+no ip address
+duplex auto
+speed auto
+pppoe enable group global
+!
+interface GigabitEthernet0/1
+description Connection to 192.168.1.0/24 and 2001:DB8:ACAD:1::/64 LAN
+ip address 192.168.1.1 255.255.255.0
+ip access-group ICMP_ACCESS out
+ip nat inside
+ip virtual-reassembly in
+duplex auto
+speed auto
+ipv6 address FE80::1 link-local
+ipv6 address 2001:DB8:ACAD:1::1/64
+ipv6 eigrp 1
 !
 interface Serial0/1/0
- description Connection to R2
- bandwidth 128
- ip address 172.27.123.1 255.255.255.252
- ip ospf cost 7500
- clock rate 64000
+description PPP connection to North AS.
+ip address 209.165.200.225 255.255.255.252
+ip nat outside
+ip virtual-reassembly in
+encapsulation ppp
+ipv6 address FE80::1 link-local
+ipv6 address 2001:DB8:ACAD:A::1/64
+ipv6 eigrp 1
+ppp authentication chap
+clock rate 128000
 !
 interface Serial0/1/1
- no ip address
+no ip address
+shutdown
 !
-interface GigabitEthernet0
- vrf forwarding Mgmt-intf
- no ip address
- negotiation auto
-!
-router ospf 1
- router-id 1.1.1.1
- auto-cost reference-bandwidth 1000
- passive-interface GigabitEthernet0/0/1
- passive-interface Loopback1
- network 172.27.0.0 0.0.0.255 area 0
- network 172.27.1.0 0.0.0.255 area 1
- network 172.27.123.0 0.0.0.3 area 0
+router bgp 65010
+bgp log-neighbor-changes
+network 192.168.1.0
+network 209.165.201.0 mask 255.255.255.252
+neighbor 172.16.1.2 remote-as 65030
 !
 ip forward-protocol nd
-no ip http server
-ip http secure-server
-ip tftp source-interface GigabitEthernet0/0/1
 !
+ip http server
+no ip http secure-server
 !
+ip nat inside source list 1 interface Serial0/0/0 overload
+ip route 0.0.0.0 0.0.0.0 Serial0/0/0
+ip route 209.165.200.229 255.255.255.255 Serial0/0/0
 !
+ip access-list standard SNMP-ACCESS
+permit 192.168.1.0 0.0.0.255
 !
+ip access-list extended ICMP_ACCESS
+deny   icmp any any echo
+permit ip any any
 !
+ipv6 router eigrp 1
+eigrp router-id 1.1.1.1
+!
+snmp-server group SNMP v3 priv read SNMP-RO access SNMP-ACCESS
+snmp-server view SNMP-RO iso included
+access-list 1 permit 192.168.1.0 0.0.0.255
 !
 control-plane
 !
-banner motd Unauthorized Access is Prohibited
+!
+banner motd ^C Unauthorized Access is Prohibited! ^C
 !
 line con 0
- password 7 030752180500
- logging synchronous
- login
- transport input none
- stopbits 1
+password 7 13061E010803
+login
 line aux 0
- stopbits 1
+line 2
+no activation-character
+no exec
+transport preferred none
+transport output pad telnet rlogin lapb-ta mop udptn v120 ssh
+stopbits 1
 line vty 0 4
- password 7 110A1016141D
- login
+login local
+transport input ssh
 !
-wsma agent exec
-!
-wsma agent config
-!
-wsma agent filesys
-!
-wsma agent notify
-!
+scheduler allocate 20000 1000
 !
 end

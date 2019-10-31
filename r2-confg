@@ -1,0 +1,112 @@
+# R2 Key
+Building configuration...
+
+Current configuration : 2134 bytes
+!
+version 15.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+!
+hostname R2
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$byFb$WgKOqyV4CqmPpLWHWqBGA.
+!
+no aaa new-model
+memory-size iomem 15
+!
+no ip domain lookup
+ip cef
+ipv6 unicast-routing
+ipv6 cef
+!
+multilink bundle-name authenticated
+!
+cts logging verbose
+!
+!
+username R1 password 7 05080F1C2243
+username Cust1 password 7 13061E010803143A3B2B2D
+!
+redundancy
+!
+bba-group pppoe global
+ virtual-template 1
+!
+!
+interface Embedded-Service-Engine0/0
+ no ip address
+ shutdown
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ pppoe enable group global
+!
+interface GigabitEthernet0/1
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+!
+interface Serial0/0/0
+ description PPP connection to West AS
+ ip address 209.165.200.226 255.255.255.252
+ encapsulation ppp
+ ipv6 address FE80::2 link-local
+ ipv6 address 2001:DB8:ACAD:A::2/64
+ ipv6 eigrp 1
+ ppp authentication chap
+!
+interface Serial0/0/1
+ description PPP connection to East AS
+ ip address 209.165.200.230 255.255.255.252
+ ipv6 address FE80::2 link-local
+ ipv6 address 2001:DB8:ACAD:B::2/64
+ ipv6 eigrp 1
+ clock rate 128000
+!
+interface Virtual-Template1
+ mtu 1492
+ ip address 10.0.0.254 255.255.255.0
+ peer default ip address pool PPPoEPOOL
+ ppp authentication chap callin
+!
+ip local pool PPPoEPOOL 10.0.0.1 10.0.0.10
+ip forward-protocol nd
+!
+no ip http server
+no ip http secure-server
+!
+!
+ipv6 router eigrp 1
+ eigrp router-id 2.2.2.2
+!
+control-plane
+!
+!
+banner motd ^C Unauthorized Access is Prohibited! ^C
+!
+line con 0
+ password 7 00071A150754
+ login
+line aux 0
+line 2
+ no activation-character
+ no exec
+ transport preferred none
+ transport output pad telnet rlogin lapb-ta mop udptn v120 ssh
+ stopbits 1
+line vty 0 4
+ login
+ transport input none
+!
+scheduler allocate 20000 1000
+!
+end
+
