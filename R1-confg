@@ -1,0 +1,153 @@
+!
+! Last configuration change at 00:25:17 UTC Fri Oct 25 2019
+!
+version 16.7
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+platform qfp utilization monitor load 80
+no platform punt-keepalive disable-kernel-core
+!
+hostname R1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition Mgmt-intf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+enable secret 5 $1$.a.o$0XjeKs1N3lYvUgav3L23e0
+!
+no aaa new-model
+!
+no ip domain lookup
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+subscriber templating
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+crypto pki trustpoint TP-self-signed-651188408
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-651188408
+ revocation-check none
+ rsakeypair TP-self-signed-651188408
+!
+!
+crypto pki certificate chain TP-self-signed-651188408
+!
+!
+license udi pid ISR4321/K9 sn FDO220406YF
+no license smart enable
+diagnostic bootup level minimal
+!
+spanning-tree extend system-id
+!
+!
+!
+!
+redundancy
+ mode none
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback1
+ ip address 172.27.1.1 255.255.255.0
+!
+interface GigabitEthernet0/0/0
+ no ip address
+ shutdown
+ negotiation auto
+!
+interface GigabitEthernet0/0/1
+ description Connection to S1
+ ip address 172.27.0.1 255.255.255.0
+ standby 1 ip 172.27.0.2
+ standby 1 priority 150
+ standby 1 preempt
+ shutdown
+ negotiation auto
+!
+interface Serial0/1/0
+ description Connection to R2
+ bandwidth 128
+ ip address 172.27.123.1 255.255.255.252
+ ip ospf cost 7500
+ clock rate 64000
+!
+interface Serial0/1/1
+!
+interface GigabitEthernet0
+ vrf forwarding Mgmt-intf
+ no ip address
+ shutdown
+ negotiation auto
+!
+router ospf 1
+ router-id 1.1.1.1
+ auto-cost reference-bandwidth 1000
+ passive-interface Loopback1
+ network 172.27.0.0 0.0.0.255 area 0
+ network 172.27.1.0 0.0.0.255 area 1
+ network 172.27.123.0 0.0.0.3 area 0
+!
+ip forward-protocol nd
+ip http server
+ip http authentication local
+ip http secure-server
+ip tftp source-interface GigabitEthernet0
+!
+!
+!
+!
+!
+!
+control-plane
+!
+banner motd ^CUnauthorized access is Prohibited!
+banner motd ^C
+!
+line con 0
+ password 7 094F471A1A0A
+ login
+ transport input none
+ stopbits 1
+line aux 0
+ stopbits 1
+line vty 0 4
+ password 7 05080F1C22430E
+ login
+!
+wsma agent exec
+!
+wsma agent config
+!
+wsma agent filesys
+!
+wsma agent notify
+!
+!
+end
+

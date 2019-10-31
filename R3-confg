@@ -1,6 +1,5 @@
-
 !
-! Last configuration change at 09:33:55 UTC Sat Jun 8 2019
+! Last configuration change at 00:30:59 UTC Fri Oct 25 2019
 !
 version 16.7
 service timestamps debug datetime msec
@@ -9,7 +8,7 @@ service password-encryption
 platform qfp utilization monitor load 80
 no platform punt-keepalive disable-kernel-core
 !
-hostname R1
+hostname R3
 !
 boot-start-marker
 boot-end-marker
@@ -23,7 +22,7 @@ vrf definition Mgmt-intf
  address-family ipv6
  exit-address-family
 !
-enable secret 5 $1$kpEq$BwMA2UdoRJPd4d6VRYNwD1
+enable secret 5 $1$N.qn$ky6unPWRa9Zw0CcIsMQii1
 !
 no aaa new-model
 !
@@ -45,10 +44,17 @@ multilink bundle-name authenticated
 !
 !
 !
+crypto pki trustpoint TP-self-signed-231259988
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-231259988
+ revocation-check none
+ rsakeypair TP-self-signed-231259988
 !
 !
+crypto pki certificate chain TP-self-signed-231259988
 !
-license udi pid ISR4321/K9 sn FDO22010HKF
+!
+license udi pid ISR4321/K9 sn FDO22041JD6
 no license smart enable
 diagnostic bootup level minimal
 !
@@ -67,49 +73,48 @@ redundancy
 !
 !
 !
-interface Loopback1
- ip address 172.27.1.1 255.255.255.0
+interface Loopback4
+ ip address 172.27.4.1 255.255.255.0
 !
 interface GigabitEthernet0/0/0
  no ip address
+ shutdown
  negotiation auto
 !
 interface GigabitEthernet0/0/1
- description Connection to S1
- ip address 172.27.0.1 255.255.255.0
- standby version 2
+ description Connection to S3
+ ip address 172.27.0.3 255.255.255.0
  standby 1 ip 172.27.0.2
- standby 1 priority 0
  negotiation auto
 !
 interface Serial0/1/0
- description Connection to R2
  bandwidth 128
- ip address 172.27.123.1 255.255.255.252
- ip ospf cost 7500
- clock rate 64000
+ no ip address
+ shutdown
 !
 interface Serial0/1/1
- no ip address
+ description Connection to R2
+ ip address 172.27.123.6 255.255.255.252
 !
 interface GigabitEthernet0
  vrf forwarding Mgmt-intf
  no ip address
+ shutdown
  negotiation auto
 !
 router ospf 1
- router-id 1.1.1.1
+ router-id 3.3.3.3
  auto-cost reference-bandwidth 1000
- passive-interface GigabitEthernet0/0/1
- passive-interface Loopback1
+ passive-interface Loopback4
  network 172.27.0.0 0.0.0.255 area 0
- network 172.27.1.0 0.0.0.255 area 1
- network 172.27.123.0 0.0.0.3 area 0
+ network 172.27.4.0 0.0.0.255 area 3
+ network 172.27.123.4 0.0.0.3 area 0
 !
 ip forward-protocol nd
-no ip http server
+ip http server
+ip http authentication local
 ip http secure-server
-ip tftp source-interface GigabitEthernet0/0/1
+ip tftp source-interface GigabitEthernet0
 !
 !
 !
@@ -118,18 +123,17 @@ ip tftp source-interface GigabitEthernet0/0/1
 !
 control-plane
 !
-banner motd Unauthorized Access is Prohibited
+banner motd ^CUnauthorized access is prohibited^C
 !
 line con 0
- password 7 030752180500
- logging synchronous
+ password 7 1511021F0725
  login
  transport input none
  stopbits 1
 line aux 0
  stopbits 1
 line vty 0 4
- password 7 110A1016141D
+ password 7 060506324F4149
  login
 !
 wsma agent exec
@@ -142,3 +146,4 @@ wsma agent notify
 !
 !
 end
+
