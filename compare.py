@@ -16,7 +16,7 @@ compare = (device + "-confg")
 ignore = "ignore.txt"
 
 # download the key file
-url_key = 'http://localhost/compare/' + cisco + '/' + lab + '/' + baseline 
+url_key = 'http://192.168.1.10/compare/' + cisco + '/' + lab + '/' + baseline 
 get_key = requests.get(url_key)
 save_key = open(baseline, 'wb').write(get_key.content)
 
