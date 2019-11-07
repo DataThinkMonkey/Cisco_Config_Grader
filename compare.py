@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 # Compare baseline Cisco config with Student config
+#
+# Jared Bernard
+#
+## To-do
+# Loop prompt for device within the same lab.
+# Check for config files and name properly.
 
 import diffios
 import requests
