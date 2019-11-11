@@ -9,8 +9,9 @@
 
 import diffios
 import requests
-from os import system, name
 import os 
+import re
+from os import system, name
 from pprint import pprint
 # import sleep to show output for some time period
 from time import sleep
@@ -43,14 +44,15 @@ def report():
     # Compare
     diff = diffios.Compare(baseline, compare, ignore)
     # Print
+    print("\nYOUR REPORT FOR DEVICE: " + device )
     print("\n**** YOU ARE MISSING THE FOLLOWING FROM YOUR CONFIG ****\n")
     print(diff.pprint_missing())
 
-    print("\n~~~~~~~~~~~~~ COMPARISON ~~~~~~~~~~~~~~~~\n")
-    print("EXPLANATION:")
-    print("Lines beginning with a dash - Settings missing from your config.")
-    print("Lines beginning with a plus + Settings in your config, not found in the key.\n")
-    print(diff.delta())
+#    print("\n~~~~~~~~~~~~~ COMPARISON ~~~~~~~~~~~~~~~~\n")
+#    print("EXPLANATION:")
+#    print("Lines beginning with a dash - Settings missing from your config.")
+#    print("Lines beginning with a plus + Settings in your config, not found in the key.\n")
+#    print(diff.delta())
 
 def cleanup():
     # Delete downloaded files
@@ -58,36 +60,56 @@ def cleanup():
     os.remove(ignore)
 
 clear()
-print("""
-************ Cisco Lab Auto Grader **************""")
-#time.sleep(1)
-print()
 
-cisco = input("""
-   Which Cisco class you are taking?
-
-   1. INFO 1200 - Cisco 1
-   2. INFO 1201 - Cisco 2
-   3. INFO 2220 - Cisco 3
-   4. INFO 2230 - Cisco 4
-                    
-   Enter the number of the Cisco class you are taking: """)
-
-if cisco == "1" or cisco == "2" or cisco == "3" or cisco == "4":
-   url_class = url + '/' + cisco 
-else:
-    # clear the screen 
-    clear() 
+######### BEGIN MENU CISCO LOOP ########
+while True:
     print("""
-You must select either 1,2,3 or 4. Please try again.""")
+    ************ Cisco Lab Auto Grader **************""")
+    #time.sleep(1)
     print()
+######## Get Cisco Class ##########
+    cisco = input("""
+       Which Cisco class you are taking?
 
-lab = input("""
-  Enter the lab number (i.e. 2.3.1.5 or final): """)
-url_lab = url_class + '/' + lab 
+       1. INFO 1200 - Cisco 1
+       2. INFO 1201 - Cisco 2
+       3. INFO 2220 - Cisco 3
+       4. INFO 2230 - Cisco 4\n                        
+       Enter the number of the Cisco class you are taking: """)
+# Validate Cisco class choice.
+    if cisco == "1" or cisco == "2" or cisco == "3" or cisco == "4":
+# Build partial url with class         
+       url_class = url + '/' + cisco
+######## LAB #############
+       while True:
+            lab = input("""
+       Enter the lab number (i.e. 2.3.1.5 or final): """)
+            lab_format = re.match(r'\d{1,2}\.\d{1,2}\.\d{1,2}\.\d{1,2}\Z',lab) 
+            if lab_format:
+                url_lab = url_class + '/' + lab
+######## DEVICE ###########                
+                while True:
+                    device = input("""
+       Enter the device you would like to compare (i.e R1, R2, S1, etc): """)
+                    device_format = re.match('R|S\d\Z',device) #Need to work on only R or S with either 1, 2 or 3
+                    if device_format:
+                       continue 
+                    else:
+                        print("\nDevice should either a capital R or S followed by a single digit, either 1,2 or 3, i.e. R1 for Router 1, S2 for Switch 2.\n ")
+                        break
+########### END LAB IF ##########                    
+            elif lab == 'final':
+                url_lab = url_class + '/' + lab
+                break
+            else:
+                print("\nEnter lab as 4, one or two digit numbers separated by dots, i.e. 2.3.4.12. See your lab number in Netacad.")
+######## END CISCO CLASS IF ###########    
+    else:
+        clear()
+        print("""
+    You must select either 1,2,3 or 4. Please try again.""")
+        print()
 
-device = input("""
-  Enter the device you would like to compare (i.e R1, R2, S1, etc): """)
 baseline = (device + "-key")
 compare = (device + "-confg")
 
