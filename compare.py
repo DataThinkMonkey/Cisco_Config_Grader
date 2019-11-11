@@ -4,7 +4,8 @@
 # Jared Bernard
 #
 ## To-do
-# Loop prompt for device within the same lab.
+# Validate lab number 
+# Compare with lab directories on server and if not there, return "Lab not found"
 # Check for config files and name properly.
 
 import diffios
@@ -81,45 +82,35 @@ while True:
 # Build partial url with class         
        url_class = url + '/' + cisco
 ######## LAB #############
-       while True:
-            lab = input("""
-       Enter the lab number (i.e. 2.3.1.5 or final): """)
-            lab_format = re.match(r'\d{1,2}\.\d{1,2}\.\d{1,2}\.\d{1,2}\Z',lab) 
-            if lab_format:
-                url_lab = url_class + '/' + lab
+       lab = input("""
+   Enter the lab number (i.e. 2.3.1.5 or final): """)
+       url_lab = url_class + '/' + lab
 ######## DEVICE ###########                
-                while True:
-                    device = input("""
-       Enter the device you would like to compare (i.e R1, R2, S1, etc): """)
-                    device_format = re.match('R|S\d\Z',device) #Need to work on only R or S with either 1, 2 or 3
-                    if device_format:
-                       continue 
-                    else:
-                        print("\nDevice should either a capital R or S followed by a single digit, either 1,2 or 3, i.e. R1 for Router 1, S2 for Switch 2.\n ")
-                        break
-########### END LAB IF ##########                    
-            elif lab == 'final':
-                url_lab = url_class + '/' + lab
-                break
-            else:
-                print("\nEnter lab as 4, one or two digit numbers separated by dots, i.e. 2.3.4.12. See your lab number in Netacad.")
+       while True:
+           device = input("""
+Enter the device to compare (i.e R1, R2, S1, etc) or quit: """)
+#                   device_format = re.match('R|S\d\Z',device) #Need to work on only R or S with either 1, 2 or 3
+           if device == "R1" or device == "R2" or device == "R3" or device == "S1" or device == "S2" or device == "S3":
+             baseline = (device + "-key")
+             compare = (device + "-confg")
+             get_key()
+             get_ignore()
+             clear()
+             report()
+             cleanup()
+             print()
+           elif device == "quit":
+              clear() 
+              break
+           else:
+             print("\nDevice should either R1,R2,R3,S1,S2,S3 or quit to end.\n ")
+           continue 
 ######## END CISCO CLASS IF ###########    
     else:
         clear()
         print("""
     You must select either 1,2,3 or 4. Please try again.""")
         print()
-
-baseline = (device + "-key")
-compare = (device + "-confg")
-
-
-get_key()
-get_ignore()
-clear()
-report()
-cleanup()
-print()
 
 
 # ******Other print options****************************
