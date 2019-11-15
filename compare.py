@@ -8,10 +8,8 @@
 # Compare with lab directories on server and if not there, return "Lab not found"
 # Check for config files and name properly.
 
-import diffios
-import requests
-import os 
-import re
+import diffios, requests, os, re, sys, urllib.request
+from bs4 import BeautifulSoup 
 from os import system, name
 from pprint import pprint
 # import sleep to show output for some time period
@@ -82,8 +80,42 @@ while True:
 # Build partial url with class         
        url_class = url + '/' + cisco
 ######## LAB #############
+       clear() 
+####### DISPLAY LABS AVAILABLE ##########
+       # http get page
+       r = requests.get(url_class)
+       # parse the page
+       soup = BeautifulSoup(r.content, 'html.parser')
+       # Clean up unwanted <a href> links, mostly headers in the table
+       header0 = soup.find(href='?C=S;O=A')
+       header0.decompose()
+       header1 = soup.find(href='?C=M;O=A')
+       header1.decompose()
+       header2 = soup.find(href='?C=D;O=A')
+       header2.decompose()
+       header3 = soup.find(href='?C=N;O=D')
+       header3.decompose()
+       header4 = soup.find(href='/compare/') # remove parent dir
+       header4.decompose()
+       header5 = soup.find(href='final/') # do not list dir with final key 
+       header5.decompose()
+
+       # find table, only a single table listing child directories
+       tb = soup.find('table')
+       # find only the <a> tags
+       dir_links = tb.find_all('a')
+       
+       print("""
+    ************ Available Labs for Cisco """ + cisco + """ ***********\n""" )
+       # Loop through and list <a> tags with are the child dir
+       for dirs in dir_links:
+           #print(dirs.prettify()) # displays html in pretty format, for debugging
+           folders = dirs.contents[0]
+           # print and remove the trailing forward slash /
+           print("""           """ + folders.replace('/', ''))
+####### INPUT LAB ########
        lab = input("""
-   Enter the lab number (i.e. 2.3.1.5 or final): """)
+   Enter a lab number: """)
        url_lab = url_class + '/' + lab
 ######## DEVICE ###########                
        while True:
