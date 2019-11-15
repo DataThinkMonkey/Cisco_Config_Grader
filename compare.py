@@ -117,10 +117,42 @@ while True:
        lab = input("""
    Enter a lab number: """)
        url_lab = url_class + '/' + lab
+       clear()
 ######## DEVICE ###########                
        while True:
+           # http get page
+           r_device = requests.get(url_lab)
+           # parse the page
+           soup = BeautifulSoup(r_device.content, 'html.parser') 
+
+           # Clean up unwanted <a href> links, mostly headers in the table
+           header0 = soup.find(href='?C=S;O=A')
+           header0.decompose()
+           header1 = soup.find(href='?C=M;O=A')
+           header1.decompose()
+           header2 = soup.find(href='?C=D;O=A')
+           header2.decompose()
+           header3 = soup.find(href='?C=N;O=D')
+           header3.decompose()
+           header4 = soup.find(href='/compare/' + cisco + '/') # remove parent dir
+           header4.decompose()
+
+           # find table, only a single table listing child directories
+           tb_device = soup.find('table')
+           # find only the <a> tags
+           device_files = tb_device.find_all('a')
+           print("""
+    ************ Devices Used in Lab  """ + lab + """ ***********\n""" )
+
+           # Loop through and list <a> tags with are the child dir
+           for files in device_files:
+               # print(dirs.prettify()) # displays html in pretty format, for debugging
+               key_files = files.contents[0]
+               # print and remove the trailing forward slash /
+               print("""          """ + key_files.replace('-key', ''))
+
            device = input("""
-Enter the device to compare (i.e R1, R2, S1, etc) or quit: """)
+Enter the device to compare (case sensitive) or quit: """)
 #                   device_format = re.match('R|S\d\Z',device) #Need to work on only R or S with either 1, 2 or 3
            if device == "R1" or device == "R2" or device == "R3" or device == "S1" or device == "S2" or device == "S3":
              baseline = (device + "-key")
@@ -135,7 +167,7 @@ Enter the device to compare (i.e R1, R2, S1, etc) or quit: """)
               clear() 
               break
            else:
-             print("\nDevice should either R1,R2,R3,S1,S2,S3 or quit to end.\n ")
+             print("\nTry Again. Make to enter a listed device using capital letters or 'quit' to return to the beginning.\n ")
            continue 
 ######## END CISCO CLASS IF ###########    
     else:
